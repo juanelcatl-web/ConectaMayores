@@ -15,8 +15,10 @@
         .step-hidden { display: none; }
         .tab-active { border-bottom: 4px solid white; opacity: 1 !important; }
         .chat-item:active { background: #f0f0f0; }
-        #chat-messages { background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-attachment: fixed; }
-        .status-circle { border: 2px solid #25d366; padding: 2px; border-radius: 50%; }
+        #chat-messages { 
+            background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); 
+            background-attachment: fixed; 
+        }
     </style>
 </head>
 <body class="h-screen flex flex-col overflow-hidden">
@@ -24,18 +26,18 @@
     <div id="login-screen" class="fixed inset-0 z-[100] bg-white flex flex-col items-center p-6 overflow-y-auto">
         <div class="max-w-sm w-full text-center space-y-6 py-8">
             <img src="https://images.unsplash.com/photo-1581579438747-1dc8d17bbce4?q=80&w=512&auto=format&fit=crop" class="w-32 h-32 mx-auto rounded-full shadow-xl object-cover border-4 border-emerald-100">
-            <h1 class="text-3xl font-black text-[#075e54] italic uppercase">Conectados!</h1>
+            <h1 class="text-3xl font-black text-[#075e54] italic uppercase tracking-tighter">Conectados!</h1>
             <div id="auth-container" class="bg-white p-8 rounded-3xl shadow-2xl border border-gray-100 text-left">
                 <div id="step-phone">
                     <p class="text-gray-500 mb-4 text-sm font-bold">Bienvenido al círculo.</p>
-                    <input type="number" id="userPhone" placeholder="Tu WhatsApp (Sin el 0 y sin el 15)" class="w-full border-b-2 border-[#075e54] outline-none py-3 text-lg mb-6">
+                    <input type="number" id="userPhone" placeholder="Tu WhatsApp" class="w-full border-b-2 border-[#075e54] outline-none py-3 text-lg mb-6">
                     <button onclick="prepareSurvey()" class="w-full bg-[#25d366] text-white py-4 rounded-2xl font-bold uppercase shadow-lg">Siguiente</button>
                 </div>
                 <div id="step-survey" class="step-hidden space-y-5">
                     <p class="text-[10px] text-indigo-600 font-black uppercase tracking-widest">🛡️ Verificación Humana</p>
                     <input type="text" id="userName" class="w-full border-b-2 border-[#075e54] py-2 outline-none" placeholder="¿Tu nombre?">
                     <div id="random-questions" class="space-y-4"></div>
-                    <button onclick="finishAuth()" class="w-full bg-wa text-white py-4 rounded-2xl font-bold uppercase shadow-xl mt-4">Validar e Ingresar</button>
+                    <button onclick="finishAuth()" class="w-full bg-wa text-white py-4 rounded-2xl font-bold uppercase shadow-xl mt-4">Ingresar</button>
                 </div>
             </div>
         </div>
@@ -56,14 +58,10 @@
         <div id="view-list" class="flex-1 bg-white overflow-y-auto pb-20"></div>
 
         <div id="view-estados" class="hidden flex-1 bg-white overflow-y-auto p-4">
-            <h3 class="text-gray-500 font-bold text-sm mb-4">Recientes</h3>
+            <h3 class="text-gray-500 font-bold text-sm mb-4">Novedades</h3>
             <div class="flex items-center gap-4 mb-6">
-                <div class="status-circle"><img src="https://images.unsplash.com/photo-1581579438747-1dc8d17bbce4?q=80&w=100" class="w-14 h-14 rounded-full object-cover"></div>
-                <div><p class="font-bold">Administración</p><p class="text-xs text-gray-400">Hoy, 10:30 AM</p></div>
-            </div>
-            <div class="bg-emerald-50 p-6 rounded-2xl border-2 border-dashed border-emerald-200 text-center shadow-inner">
-                <p class="italic text-emerald-800 font-serif text-lg">"La vida es un viaje, y lo mejor es compartirlo con amigos."</p>
-                <p class="text-xs mt-2 text-emerald-600 font-bold uppercase">- Frase del día -</p>
+                <div class="p-[2px] border-2 border-emerald-500 rounded-full"><img src="https://images.unsplash.com/photo-1581579438747-1dc8d17bbce4?q=80&w=100" class="w-14 h-14 rounded-full object-cover"></div>
+                <div><p class="font-bold">Administración</p><p class="text-xs text-gray-400">Ahora los chats guardan memoria 💾</p></div>
             </div>
         </div>
 
@@ -72,36 +70,26 @@
                 <span onclick="closeChat()" class="text-2xl mr-2">←</span>
                 <div id="chat-icon" class="w-10 h-10 rounded-full flex items-center justify-center bg-white/20 text-xl"></div>
                 <h2 id="chat-title" class="font-bold flex-1 text-sm truncate"></h2>
-                <button onclick="alert('Reportado correctamente')" class="text-[10px] border px-2 py-1 rounded">REPORTAR</button>
+                <button onclick="clearRoomHistory()" class="text-[9px] border px-2 py-1 rounded opacity-70">LIMPIAR</button>
             </div>
             <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3 flex flex-col"></div>
             <footer class="p-2 bg-[#f0f0f0] flex items-center gap-2">
-                <label class="bg-gray-300 text-gray-700 w-11 h-11 rounded-full flex items-center justify-center cursor-pointer shadow-sm active:bg-gray-400">
+                <label class="bg-gray-300 text-gray-700 w-11 h-11 rounded-full flex items-center justify-center cursor-pointer shadow-sm">
                     📷<input type="file" accept="image/*" class="hidden" onchange="sendPhoto(this)">
                 </label>
-                <input type="text" id="msgInput" placeholder="Escribe algo..." class="flex-1 p-3 rounded-full outline-none bg-white shadow-sm">
-                <button onclick="sendMsg()" class="bg-[#128c7e] text-white w-12 h-12 rounded-full flex items-center justify-center shadow-md active:scale-90">➤</button>
+                <input type="text" id="msgInput" placeholder="Escribe algo..." class="flex-1 p-3 rounded-full outline-none bg-white">
+                <button onclick="sendMsg()" class="bg-[#128c7e] text-white w-12 h-12 rounded-full flex items-center justify-center shadow-md">➤</button>
             </footer>
         </div>
     </div>
 
     <script>
-        const bancoPreguntas = [
-            "¿Qué era el Winco?", "¿Qué eran las pastillas DRF?", "¿Qué era la carta de ajuste?", 
-            "¿Cómo se llamaba el jabón de pan?", "¿Para qué servía la gomina?", "¿Qué era un Wincofón?",
-            "¿Qué se hacía con el sifón de vidrio?", "¿A qué jugabas en la vereda?", 
-            "¿Quién decía 'Odol Pregunta'?", "¿De qué color era el rastrojero?"
-        ];
-
+        let currentRoom = "";
+        const bancoPreguntas = ["¿Qué era el Winco?", "¿Qué eran las DRF?", "¿Qué era la carta de ajuste?", "¿Cómo se llamaba el jabón de pan?"];
         const salas = [
             {t: "Círculo General", i: "🤝", c: "emerald"}, {t: "Recetas y Cocina", i: "🍳", c: "orange"},
-            {t: "Automóviles Clásicos", i: "🚗", c: "blue"}, {t: "Viajes y Paseos", i: "🚌", c: "purple"},
-            {t: "Huerta y Jardín", i: "🌿", c: "green"}, {t: "Tango y Folklore", i: "💃", c: "red"},
-            {t: "Tejido y Costura", i: "🧶", c: "pink"}, {t: "Salud y Bienestar", i: "🍎", c: "rose"},
-            {t: "Cine y Series", i: "🎬", c: "slate"}, {t: "Libros y Poesía", i: "📚", c: "yellow"},
-            {t: "Mascotas", i: "🐶", c: "orange"}, {t: "Nietos y Familia", i: "👧", c: "cyan"},
-            {t: "Juegos y Puzzles", i: "🧩", c: "indigo"}, {t: "Tecnología Fácil", i: "📱", c: "gray"},
-            {t: "Recuerdos de Barrio", i: "🏘️", c: "amber"}
+            {t: "Automóviles Clásicos", i: "🚗", c: "blue"}, {t: "Huerta y Jardín", i: "🌿", c: "green"},
+            {t: "Tango y Folklore", i: "💃", c: "red"}, {t: "Recuerdos de Barrio", i: "🏘️", c: "amber"}
         ];
 
         window.onload = () => {
@@ -113,17 +101,14 @@
         };
 
         function prepareSurvey() {
-            if(document.getElementById('userPhone').value.length < 8) return alert("Ingresa un número válido");
             document.getElementById('step-phone').classList.add('step-hidden');
             document.getElementById('step-survey').classList.remove('step-hidden');
-            const q = bancoPreguntas.sort(() => 0.5 - Math.random()).slice(0, 3);
-            document.getElementById('random-questions').innerHTML = q.map(p => `<input type="text" class="w-full border-b py-2 outline-none mb-2 text-sm" placeholder="${p}">`).join('');
+            const q = bancoPreguntas.sort(() => 0.5 - Math.random()).slice(0, 2);
+            document.getElementById('random-questions').innerHTML = q.map(p => `<input type="text" class="w-full border-b py-2 outline-none mb-2" placeholder="${p}">`).join('');
         }
 
         function finishAuth() {
-            const name = document.getElementById('userName').value;
-            if(!name) return alert("Dinos tu nombre");
-            localStorage.setItem('conectados_user', name);
+            localStorage.setItem('conectados_user', document.getElementById('userName').value);
             location.reload();
         }
 
@@ -131,7 +116,7 @@
             document.getElementById('view-list').innerHTML = salas.map(s => `
                 <div onclick="openChat('${s.t}', '${s.i}')" class="flex items-center p-4 gap-4 border-b bg-white chat-item">
                     <div class="w-14 h-14 bg-${s.c}-500 rounded-full flex items-center justify-center text-2xl text-white shadow-sm">${s.i}</div>
-                    <div><h3 class="font-bold text-gray-800">${s.t}</h3><p class="text-xs text-gray-400">Toca para conversar</p></div>
+                    <div class="flex-1"><h3 class="font-bold">${s.t}</h3><p class="text-xs text-gray-400">Toca para conversar</p></div>
                 </div>
             `).join('');
         }
@@ -141,24 +126,37 @@
             document.getElementById('view-list').classList.toggle('hidden', !isSalas);
             document.getElementById('view-estados').classList.toggle('hidden', isSalas);
             document.getElementById('btn-tab-salas').classList.toggle('tab-active', isSalas);
-            document.getElementById('btn-tab-salas').classList.toggle('opacity-60', !isSalas);
             document.getElementById('btn-tab-estados').classList.toggle('tab-active', !isSalas);
-            document.getElementById('btn-tab-estados').classList.toggle('opacity-60', isSalas);
         }
 
+        // --- LÓGICA DE MEMORIA ---
         function openChat(t, i) {
+            currentRoom = t;
             document.getElementById('view-chat').classList.remove('hidden');
             document.getElementById('chat-title').innerText = t;
             document.getElementById('chat-icon').innerText = i;
-            document.getElementById('chat-messages').innerHTML = `<div class="bg-white/80 p-2 rounded-lg text-center text-[10px] text-gray-500 mb-4">Chat seguro de ${t}</div>`;
+            loadMessages();
         }
 
-        function closeChat() { document.getElementById('view-chat').classList.add('hidden'); }
+        function saveMessage(content, type = 'text') {
+            let history = JSON.parse(localStorage.getItem('chat_' + currentRoom)) || [];
+            history.push({ content, type, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) });
+            localStorage.setItem('chat_' + currentRoom, JSON.stringify(history));
+        }
+
+        function loadMessages() {
+            const chatBox = document.getElementById('chat-messages');
+            chatBox.innerHTML = '';
+            let history = JSON.parse(localStorage.getItem('chat_' + currentRoom)) || [];
+            history.forEach(msg => displayMsg(msg.content, true, msg.type, msg.time));
+        }
 
         function sendMsg() {
             const val = document.getElementById('msgInput').value;
             if(!val) return;
-            addMessage(`<p class="text-sm">${val}</p>`, true);
+            const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            saveMessage(val, 'text');
+            displayMsg(val, true, 'text', time);
             document.getElementById('msgInput').value = '';
         }
 
@@ -166,24 +164,34 @@
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    addMessage(`<img src="${e.target.result}" class="rounded-lg max-w-full h-auto shadow-sm">`, true);
+                    const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    saveMessage(e.target.result, 'photo');
+                    displayMsg(e.target.result, true, 'photo', time);
                 };
                 reader.readAsDataURL(input.files[0]);
             }
         }
 
-        function addMessage(content, isMe) {
+        function displayMsg(content, isMe, type, time) {
             const chat = document.getElementById('chat-messages');
-            chat.innerHTML += `<div class="p-3 rounded-lg shadow-sm max-w-[85%] mb-2 ${isMe ? 'bg-[#dcf8c6] self-end' : 'bg-white self-start'}">
-                <p class="text-[9px] font-bold text-emerald-700 uppercase mb-1">${isMe ? 'Yo' : 'Amigo'}</p>
-                ${content}
-            </div>`;
+            const html = type === 'text' ? `<p class="text-sm">${content}</p>` : `<img src="${content}" class="rounded-lg max-w-full">`;
+            chat.innerHTML += `
+                <div class="p-2 rounded-lg shadow-sm max-w-[85%] mb-2 bg-[#dcf8c6] self-end">
+                    ${html}
+                    <p class="text-[8px] text-right opacity-50 mt-1">${time}</p>
+                </div>`;
             chat.scrollTop = chat.scrollHeight;
         }
 
-        function logout() { if(confirm("¿Cerrar sesión?")) { localStorage.clear(); location.reload(); } }
+        function clearRoomHistory() {
+            if(confirm("¿Borrar historial de esta sala?")) {
+                localStorage.removeItem('chat_' + currentRoom);
+                loadMessages();
+            }
+        }
 
-        document.getElementById('msgInput').addEventListener("keypress", (e) => { if (e.key === "Enter") sendMsg(); });
+        function closeChat() { document.getElementById('view-chat').classList.add('hidden'); }
+        function logout() { localStorage.clear(); location.reload(); }
     </script>
 </body>
     </html>
