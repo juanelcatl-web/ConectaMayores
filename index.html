@@ -4,196 +4,183 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Conectados!</title>
+    
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#075e54">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="apple-touch-icon" href="1772494138380.png">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <link rel="apple-touch-icon" href="https://images.unsplash.com/photo-1581579438747-1dc8d17bbce4?q=80&w=512&auto=format&fit=crop">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #e5ddd5; }
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #e5ddd5; overflow-x: hidden; }
         .bg-wa { background: #075e54; }
-        .bg-wa-light { background: #128c7e; }
+        .bg-wa-light { background: #25d366; }
         .step-hidden { display: none; }
-        .chat-item { transition: background 0.2s; cursor: pointer; border-bottom: 1px solid #f0f0f0; }
-        #chat-messages { background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-attachment: fixed; }
-        .btn-report { color: #ef4444; font-size: 10px; font-weight: bold; border: 1px solid #ef4444; padding: 2px 6px; border-radius: 4px; }
+        .input-wa { border-bottom: 2px solid #075e54; outline: none; width: 100%; padding: 12px 0; font-size: 1.1rem; background: transparent; transition: 0.3s; }
+        .input-wa:focus { border-bottom-color: #25d366; }
+        .card-ingreso { background: white; border-radius: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        #chat-box::-webkit-scrollbar { width: 4px; }
+        #chat-box::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
     </style>
 </head>
-<body class="h-screen flex flex-col overflow-hidden">
+<body class="h-screen flex flex-col">
 
     <div id="login-screen" class="fixed inset-0 z-[100] bg-white flex flex-col items-center p-6 overflow-y-auto">
         <div class="max-w-sm w-full text-center space-y-6 py-8">
-            <img src="1772494138380.png" class="w-28 h-28 mx-auto rounded-[2rem] shadow-xl mb-2 object-cover">
-            <h1 class="text-3xl font-black text-[#075e54] italic uppercase">Conectados!</h1>
             
-            <div id="auth-container" class="bg-white p-8 rounded-3xl shadow-2xl border border-gray-100 text-left">
+            <img src="https://images.unsplash.com/photo-1581579438747-1dc8d17bbce4?q=80&w=512&auto=format&fit=crop" alt="Conectados Logo" class="w-36 h-36 mx-auto rounded-full shadow-xl mb-4 object-cover border-4 border-[#075e54]/10">
+            
+            <h1 class="text-4xl font-black text-[#075e54] tracking-tighter italic uppercase">Conectados!</h1>
+            
+            <div class="card-ingreso p-8 text-left border border-gray-100">
+                
                 <div id="step-phone">
-                    <p class="text-gray-500 mb-6 text-sm">Ingresa tu <b>WhatsApp</b> para que te recordemos.</p>
+                    <h2 class="text-xl font-bold text-gray-800 mb-2">Bienvenido/a</h2>
+                    <p class="text-gray-500 mb-6 text-sm leading-tight">Introduce tu número de <b>WhatsApp</b> para empezar a conectar con amigos.</p>
+                    
                     <div class="flex gap-3 mb-8">
-                        <div class="border-b-2 border-gray-300 py-3 text-gray-400 font-bold">+54</div>
-                        <input type="number" id="userPhone" placeholder="Área + Número" class="w-full border-b-2 border-[#075e54] outline-none py-3 text-lg">
+                        <div class="w-16 border-b-2 border-gray-300 py-3 text-center text-gray-400 font-bold">+54</div>
+                        <input type="number" id="userPhone" placeholder="Área + Número" class="input-wa">
                     </div>
-                    <button onclick="prepareSurvey()" class="w-full bg-[#25d366] text-white py-4 rounded-2xl font-black uppercase shadow-lg">Continuar</button>
+                    
+                    <button onclick="goStep('survey')" class="w-full bg-wa-light text-white py-4 rounded-2xl font-black uppercase shadow-lg active:scale-95 transition-all">Siguiente</button>
                 </div>
 
                 <div id="step-survey" class="step-hidden space-y-5">
-                    <p class="text-[10px] text-indigo-600 font-black uppercase tracking-widest">🛡️ Verificación de Época</p>
-                    <input type="text" id="userName" class="w-full border-b-2 border-[#075e54] py-2 outline-none" placeholder="¿Tu nombre?">
-                    <div id="random-questions" class="space-y-4">
-                        </div>
-                    <button onclick="finishAuth()" class="w-full bg-wa text-white py-4 rounded-2xl font-black uppercase shadow-xl mt-4">Validar e Ingresar</button>
+                    <div class="bg-indigo-50 p-3 rounded-xl border border-indigo-100 mb-2">
+                        <p class="text-[10px] font-black text-indigo-700 uppercase tracking-widest">🛡️ Verificación Humana</p>
+                        <p class="text-[11px] text-indigo-600 leading-tight">Queremos asegurar que esta red sea solo para nuestra generación. Responde brevemente:</p>
+                    </div>
+                    
+                    <div>
+                        <label class="text-[10px] font-bold uppercase text-gray-400">¿Cuál es tu nombre?</label>
+                        <input type="text" id="userName" class="input-wa !py-2 !text-base" placeholder="Ej: Mirta">
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold uppercase text-gray-400">¿Qué era el "Winco" y para qué servía?</label>
+                        <input type="text" id="q-winco" class="input-wa !py-2 !text-base" placeholder="Un recuerdo corto...">
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold uppercase text-gray-400">¿Qué pasaba cuando terminaba la programación de TV?</label>
+                        <input type="text" id="q-tv" class="input-wa !py-2 !text-base" placeholder="Ej: La carta de...">
+                    </div>
+
+                    <button onclick="finishAuth()" class="w-full bg-wa text-white py-4 rounded-2xl font-black uppercase shadow-xl mt-4">Entrar a Conectados!</button>
                 </div>
+
             </div>
-            <button id="installBtn" class="hidden w-full bg-emerald-50 text-emerald-700 py-3 rounded-xl font-bold uppercase text-[10px] border border-emerald-200">📥 Descargar como App</button>
+
+            <button id="installBtn" class="hidden w-full bg-emerald-50 text-emerald-700 py-4 rounded-2xl font-black uppercase text-[11px] border-2 border-emerald-100 flex items-center justify-center gap-2 transition-colors hover:bg-emerald-100/50">
+                <span>📥</span> Descargar App en el Celular
+            </button>
+            
+            <p class="text-[10px] text-gray-400 uppercase tracking-[0.2em] font-bold">Privacidad y Seguridad 60+</p>
         </div>
     </div>
 
     <div id="app-content" class="hidden h-screen flex flex-col">
-        <header class="bg-wa text-white pt-4 shadow-lg">
-            <div class="px-4 flex justify-between items-center mb-4">
-                <h1 class="text-xl font-bold italic">Conectados!</h1>
-                <div class="flex gap-5 text-xl"><span onclick="logout()">🚪</span><span>⋮</span></div>
+        <header class="bg-wa p-4 text-white flex justify-between items-center shadow-lg">
+            <div class="flex items-center gap-3">
+                <img src="https://images.unsplash.com/photo-1581579438747-1dc8d17bbce4?q=80&w=128&auto=format&fit=crop" class="w-10 h-10 rounded-full border border-white/30 object-cover">
+                <div>
+                    <h2 class="font-bold leading-none">Círculo General 🤝</h2>
+                    <span id="display-phone" class="text-[10px] opacity-70 font-mono"></span>
+                </div>
             </div>
-            <div class="flex text-center font-bold text-xs uppercase tracking-wider">
-                <div class="flex-1 py-3 tab-active border-b-4 border-white">Salas de Interés</div>
+            <div class="flex gap-4 opacity-80">
+                <span class="text-xl">🔍</span>
+                <span class="text-xl">⋮</span>
             </div>
         </header>
 
-        <div id="view-list" class="flex-1 bg-white overflow-y-auto">
+        <div id="chat-box" class="flex-1 overflow-y-auto p-4 space-y-4">
+            <div class="bg-white p-3 rounded-2xl rounded-tl-none shadow-sm max-w-[85%] border-l-4 border-emerald-500">
+                <p class="text-[10px] font-black text-emerald-600 uppercase mb-1">Aviso del Sistema</p>
+                <p class="text-base text-gray-700 leading-tight">¡Bienvenido/a! Tus respuestas han sido recibidas. Ya eres parte de la comunidad segura.</p>
             </div>
-
-        <div id="view-chat" class="hidden flex-1 flex flex-col fixed inset-0 z-50 bg-[#e5ddd5]">
-            <div class="bg-wa text-white p-3 flex items-center gap-3 shadow-md">
-                <span onclick="closeChat()" class="text-2xl mr-2">←</span>
-                <div id="chat-icon" class="w-10 h-10 rounded-full flex items-center justify-center bg-white/20 text-xl"></div>
-                <div class="flex-1">
-                    <h2 id="chat-title" class="font-bold text-sm"></h2>
-                    <p class="text-[8px] opacity-70">GRUPO SEGURO</p>
-                </div>
-                <button onclick="reportUser()" class="btn-report">REPORTAR</button>
-            </div>
-            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3 flex flex-col"></div>
-            <footer class="p-2 bg-[#f0f0f0] flex items-center gap-2">
-                <input type="text" id="msgInput" placeholder="Escribe un mensaje..." class="flex-1 p-3 rounded-full outline-none text-md shadow-inner bg-white">
-                <button onclick="sendMsg()" class="bg-[#128c7e] text-white w-12 h-12 rounded-full flex items-center justify-center shadow-md">➤</button>
-            </footer>
         </div>
+
+        <footer class="p-3 bg-[#f0f0f0] flex items-center gap-2 border-t">
+            <div class="bg-white flex-1 rounded-full px-5 py-3 shadow-inner flex items-center">
+                <input type="text" id="msgInput" placeholder="Escribe un mensaje..." class="w-full outline-none bg-transparent text-lg">
+            </div>
+            <button onclick="sendMsg()" class="bg-[#128c7e] text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-all">
+                <span class="text-2xl ml-1">➤</span>
+            </button>
+        </footer>
     </div>
 
     <script>
-        // BANCO DE 20 PREGUNTAS DE ÉPOCA
-        const bancoPreguntas = [
-            "¿Qué poníamos encima del Wincofón?",
-            "¿De qué marca eran las pastillas que venían en tubito?",
-            "¿Qué se hacía con el sifón de vidrio cuando se terminaba?",
-            "¿Qué era la 'carta de ajuste' en la televisión?",
-            "¿Cómo se llamaba el aparato para ver diapositivas?",
-            "¿Qué golosina era un 'cubanito'?",
-            "¿A qué boliche ibas en tu juventud?",
-            "¿Cómo se llamaba el almacenero de tu cuadra?",
-            "¿Qué usaban los hombres para peinarse (gomina)?",
-            "¿Qué marca de jeans era la más famosa?",
-            "¿Cómo se pedía permiso para sacar a bailar?",
-            "¿Qué significaba 'asaltar' una casa para bailar?",
-            "¿Para qué servía el carbón en la plancha?",
-            "¿Cómo se llamaba la revista de historietas más famosa?",
-            "¿Qué hacías cuando se cortaba la cinta del cassette?",
-            "¿Quién era el locutor de 'Odol Pregunta'?",
-            "¿De qué color era el rastrojero más común?",
-            "¿Qué se le ponía a la leche recién ordeñada?",
-            "¿A qué juego de calle jugabas (bolitas, payana)?",
-            "¿Cómo se llamaba el jabón de lavar la ropa en pan?"
-        ];
+        let deferredPrompt;
 
-        const salas = [
-            {t: "Círculo General", i: "🤝", c: "emerald"}, {t: "Recetas y Cocina", i: "🍳", c: "orange"},
-            {t: "Automóviles Clásicos", i: "🚗", c: "blue"}, {t: "Viajes y Paseos", i: "🚌", c: "purple"},
-            {t: "Huerta y Jardín", i: "🌿", c: "green"}, {t: "Tango y Folklore", i: "💃", c: "red"},
-            {t: "Tejido y Costura", i: "🧶", c: "pink"}, {t: "Salud y Bienestar", i: "🍎", c: "rose"},
-            {t: "Cine y Series", i: "🎬", c: "slate"}, {t: "Libros y Poesía", i: "📚", c: "yellow"},
-            {t: "Mascotas", i: "🐶", c: "orange"}, {t: "Nietos y Familia", i: "👧", c: "cyan"},
-            {t: "Juegos y Puzzles", i: "🧩", c: "indigo"}, {t: "Tecnología Fácil", i: "📱", c: "gray"},
-            {t: "Recuerdos de Barrio", i: "🏘️", c: "amber"}
-        ];
+        // Registro de Service Worker para PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(() => {});
+        }
 
-        // AL CARGAR: REVISAR SI YA EXISTE EL USUARIO
-        window.onload = () => {
-            const savedUser = localStorage.getItem('conectados_user');
-            if(savedUser) {
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('app-content').classList.remove('hidden');
-                loadSalas();
+        // Lógica de Instalación
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installBtn').classList.remove('hidden');
+        });
+
+        document.getElementById('installBtn').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt = null;
             }
-        };
+        });
 
-        function prepareSurvey() {
-            if(document.getElementById('userPhone').value.length < 8) return alert("Ingresa tu teléfono");
+        function goStep(stepId) {
+            const phone = document.getElementById('userPhone').value;
+            if (phone.length < 8) {
+                alert("Por favor, ingresa tu número de WhatsApp correctamente.");
+                return;
+            }
             document.getElementById('step-phone').classList.add('step-hidden');
-            document.getElementById('step-survey').classList.remove('step-hidden');
-            
-            // Elegir 3 preguntas al azar
-            const randoms = bancoPreguntas.sort(() => 0.5 - Math.random()).slice(0, 3);
-            const container = document.getElementById('random-questions');
-            container.innerHTML = randoms.map((q, i) => `
-                <div>
-                    <label class="text-[9px] font-bold text-gray-400 uppercase italic">Pregunta ${i+1}</label>
-                    <input type="text" class="input-survey w-full border-b border-gray-300 py-1 outline-none text-sm" placeholder="${q}">
-                </div>
-            `).join('');
+            document.getElementById('step-' + stepId).classList.remove('step-hidden');
         }
 
         function finishAuth() {
             const name = document.getElementById('userName').value;
-            const answers = document.querySelectorAll('.input-survey');
-            if(!name || answers[0].value.length < 2) return alert("Responde para validar");
+            const q1 = document.getElementById('q-winco').value;
+            const q2 = document.getElementById('q-tv').value;
 
-            localStorage.setItem('conectados_user', name);
-            localStorage.setItem('conectados_phone', document.getElementById('userPhone').value);
-            
+            if (!name || q1.length < 3 || q2.length < 3) {
+                alert("Por favor, responde las preguntas de seguridad para continuar.");
+                return;
+            }
+
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('app-content').classList.remove('hidden');
-            loadSalas();
+            document.getElementById('display-phone').innerText = "+54 " + document.getElementById('userPhone').value;
         }
-
-        function loadSalas() {
-            const list = document.getElementById('view-list');
-            list.innerHTML = salas.map(s => `
-                <div onclick="openChat('${s.t}', '${s.i}')" class="chat-item flex items-center p-4 gap-4">
-                    <div class="w-14 h-14 bg-${s.c}-500 rounded-full flex items-center justify-center text-2xl text-white shadow-sm">${s.i}</div>
-                    <div class="flex-1"><h3 class="font-bold text-gray-800">${s.t}</h3><p class="text-[10px] text-gray-400">Toca para entrar a conversar</p></div>
-                </div>
-            `).join('');
-        }
-
-        function openChat(title, icon) {
-            document.getElementById('view-chat').classList.remove('hidden');
-            document.getElementById('chat-title').innerText = title;
-            document.getElementById('chat-icon').innerText = icon;
-            document.getElementById('chat-messages').innerHTML = `<div class="bg-white/80 p-2 rounded-lg text-center text-[9px] text-gray-500 mb-4">Chat seguro de ${title}</div>`;
-        }
-
-        function closeChat() { document.getElementById('view-chat').classList.add('hidden'); }
 
         function sendMsg() {
             const val = document.getElementById('msgInput').value;
             if(!val) return;
-            const chat = document.getElementById('chat-messages');
-            chat.innerHTML += `<div class="bg-[#dcf8c6] p-3 rounded-lg shadow-sm max-w-[85%] self-end ml-auto mb-1"><p class="text-xs font-bold text-emerald-700 uppercase mb-1">Yo</p><p class="text-sm">${val}</p></div>`;
+            const chat = document.getElementById('chat-box');
+            
+            // Mensaje propio
+            chat.innerHTML += `
+                <div class="bg-[#dcf8c6] p-3 rounded-2xl rounded-tr-none shadow-sm max-w-[85%] self-end ml-auto border-b border-black/5">
+                    <p class="text-base text-gray-800 leading-tight">${val}</p>
+                    <p class="text-[9px] text-right text-gray-500 mt-1 uppercase">Entregado</p>
+                </div>`;
+            
             document.getElementById('msgInput').value = "";
             chat.scrollTop = chat.scrollHeight;
         }
 
-        function reportUser() {
-            alert("Reporte enviado. Un administrador revisará la actividad de esta sala en breve.");
-        }
-
-        function logout() {
-            if(confirm("¿Quieres cerrar sesión? Deberás responder el cuestionario otra vez.")) {
-                localStorage.clear();
-                location.reload();
-            }
-        }
+        // Enviar con Enter
+        document.getElementById('msgInput').addEventListener("keypress", (e) => {
+            if (e.key === "Enter") sendMsg();
+        });
     </script>
 </body>
-    </html>
-    
+</html>
