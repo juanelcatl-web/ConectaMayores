@@ -11,17 +11,14 @@
     <style>
         body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #e5ddd5; }
         .bg-wa { background: #075e54; }
-        .step-hidden { display: none; }
         .tab-active { border-bottom: 4px solid white; opacity: 1 !important; }
+        .step-hidden { display: none; }
         #chat-messages { 
             background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); 
             background-attachment: fixed; 
         }
-        .bubble-out { background: #dcf8c6; align-self: flex-end; border-radius: 15px 0 15px 15px; position: relative; }
-        .bubble-in { background: white; align-self: flex-start; border-radius: 0 15px 15px 15px; }
-        .quick-emoji { background: white; border: 1px solid #ddd; padding: 6px 12px; border-radius: 20px; font-size: 1.1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        /* Animación para el buscador */
-        #search-bar { transition: all 0.3s ease; }
+        .bubble-out { background: #dcf8c6; align-self: flex-end; border-radius: 15px 0 15px 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .sala-card:active { background: #f0f0f0; transform: scale(0.98); transition: 0.1s; }
     </style>
 </head>
 <body class="h-screen flex flex-col overflow-hidden">
@@ -33,83 +30,70 @@
             <div class="bg-white p-8 rounded-3xl shadow-2xl border border-gray-100 text-left">
                 <div id="step-phone">
                     <p class="text-gray-500 mb-4 text-sm font-bold">Tu número de WhatsApp:</p>
-                    <input type="number" id="userPhone" placeholder="Ej: 1123445566" class="w-full border-b-2 border-[#075e54] outline-none py-3 text-lg mb-6">
+                    <input type="number" id="userPhone" placeholder="Ej: 1122334455" class="w-full border-b-2 border-[#075e54] outline-none py-3 text-lg mb-6">
                     <button onclick="prepareSurvey()" class="w-full bg-[#25d366] text-white py-4 rounded-2xl font-bold uppercase shadow-lg">Siguiente</button>
                 </div>
                 <div id="step-survey" class="step-hidden space-y-4">
-                    <p class="text-[10px] text-indigo-600 font-black uppercase tracking-widest">🛡️ Verificación Humana</p>
-                    <input type="text" id="userName" class="w-full border-b-2 border-[#075e54] py-2 outline-none" placeholder="¿Cómo te llamas?">
+                    <input type="text" id="userName" class="w-full border-b-2 border-[#075e54] py-2 outline-none text-lg" placeholder="¿Cómo te llamas?">
                     <div id="random-questions" class="space-y-3"></div>
-                    <button onclick="finishAuth()" class="w-full bg-wa text-white py-4 rounded-2xl font-bold uppercase shadow-xl mt-4">Ingresar</button>
+                    <button onclick="finishAuth()" class="w-full bg-wa text-white py-4 rounded-2xl font-bold uppercase shadow-xl mt-4">¡Empezar!</button>
                 </div>
             </div>
         </div>
     </div>
 
     <div id="app-content" class="hidden h-screen flex flex-col">
-        <header class="bg-wa text-white pt-4 shadow-lg">
-            <div class="px-4 flex justify-between items-center mb-2">
-                <h1 class="text-xl font-bold italic tracking-tighter">Conectados!</h1>
-                <div class="flex gap-4 text-xl">
+        <header class="bg-wa text-white pt-4 shadow-md sticky top-0 z-40">
+            <div class="px-4 flex justify-between items-center mb-4">
+                <h1 class="text-2xl font-black italic tracking-tighter">Conectados!</h1>
+                <div class="flex gap-5 text-xl">
                     <span onclick="toggleSearch()" class="cursor-pointer">🔍</span>
                     <span onclick="logout()" class="cursor-pointer">🚪</span>
                 </div>
             </div>
-            
-            <div id="search-container" class="hidden px-4 mb-3">
-                <input type="text" id="search-input" onkeyup="filterSalas()" placeholder="Buscar sala..." class="w-full p-2 rounded-lg text-black outline-none text-sm">
+            <div id="search-box" class="hidden px-4 mb-4">
+                <input type="text" id="searchInput" onkeyup="filterSalas()" placeholder="Buscar sala..." class="w-full p-2 rounded-lg text-black outline-none shadow-inner text-sm">
             </div>
-
             <div class="flex text-center font-bold text-xs uppercase tracking-widest">
-                <div id="btn-tab-salas" class="flex-1 py-3 tab-active cursor-pointer" onclick="switchTab('salas')">Salas</div>
-                <div id="btn-tab-estados" class="flex-1 py-3 opacity-60 cursor-pointer" onclick="switchTab('estados')">Novedades</div>
+                <div id="btn-tab-salas" class="flex-1 py-3 tab-active" onclick="switchTab('salas')">Salas</div>
+                <div id="btn-tab-estados" class="flex-1 py-3 opacity-60" onclick="switchTab('estados')">Novedades</div>
             </div>
         </header>
 
-        <div id="view-list" class="flex-1 bg-white overflow-y-auto pb-24 relative">
+        <div id="view-list" class="flex-1 bg-white overflow-y-auto pb-24 shadow-inner">
             <div id="salas-container"></div>
-            
-            <button onclick="showCreateRoom()" class="fixed bottom-24 right-6 bg-[#25d366] text-white w-14 h-14 rounded-full shadow-2xl text-3xl flex items-center justify-center z-40">+</button>
+            <button onclick="openCreateModal()" class="fixed bottom-24 right-6 bg-[#25d366] text-white w-14 h-14 rounded-full shadow-2xl text-4xl flex items-center justify-center z-50 active:scale-90 transition-transform">+</button>
         </div>
 
-        <div id="modal-create" class="hidden fixed inset-0 bg-black/60 z-[110] flex items-center justify-center p-6">
-            <div class="bg-white w-full max-w-xs rounded-3xl p-6 space-y-4">
-                <h2 class="font-bold text-lg text-[#075e54]">Crear Nueva Sala</h2>
-                <input type="text" id="newRoomName" placeholder="Nombre (Ej: Amigos del Mate)" class="w-full border-b-2 p-2 outline-none">
-                <input type="text" id="newRoomEmoji" placeholder="Emoji (Ej: 🧉)" class="w-full border-b-2 p-2 outline-none">
+        <div id="create-modal" class="hidden fixed inset-0 bg-black/60 z-[110] flex items-center justify-center p-6 backdrop-blur-sm">
+            <div class="bg-white w-full max-w-xs rounded-3xl p-6 shadow-2xl">
+                <h2 class="font-bold text-[#075e54] text-xl mb-4 text-center">Nueva Sala</h2>
+                <input type="text" id="newRoomName" placeholder="Nombre (Ej: Club del Mate)" class="w-full border-b-2 p-2 outline-none mb-4 text-lg">
+                <input type="text" id="newRoomEmoji" placeholder="Emoji (Ej: 🧉)" class="w-full border-b-2 p-2 outline-none mb-6 text-center text-3xl">
                 <div class="flex gap-3">
-                    <button onclick="closeCreateRoom()" class="flex-1 py-2 text-gray-400 font-bold uppercase text-xs">Cancelar</button>
-                    <button onclick="createRoom()" class="flex-1 py-3 bg-[#25d366] text-white rounded-xl font-bold uppercase text-xs">Crear</button>
+                    <button onclick="closeCreateModal()" class="flex-1 py-2 text-gray-400 font-bold uppercase text-xs">Cancelar</button>
+                    <button onclick="createNewRoom()" class="flex-1 py-3 bg-[#25d366] text-white rounded-xl font-bold uppercase shadow-lg">Crear</button>
                 </div>
             </div>
-        </div>
-
-        <div id="view-estados" class="hidden flex-1 bg-gray-50 p-4 overflow-y-auto">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-emerald-500 mb-6 font-serif italic text-gray-700">"Nunca es tarde para encontrar nuevos amigos."</div>
         </div>
 
         <div id="view-chat" class="hidden flex-1 flex flex-col fixed inset-0 z-50 bg-[#e5ddd5]">
-            <div class="bg-wa text-white p-3 flex items-center gap-3 shadow-md">
-                <span onclick="closeChat()" class="text-2xl cursor-pointer">←</span>
+            <div class="bg-wa text-white p-3 flex items-center gap-3 shadow-lg">
+                <span onclick="closeChat()" class="text-3xl pr-2 cursor-pointer">←</span>
                 <div id="chat-icon" class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-xl"></div>
-                <div class="flex-1 overflow-hidden">
-                    <h2 id="chat-title" class="font-bold text-sm truncate"></h2>
-                </div>
-                <button onclick="clearRoomHistory()" class="text-[8px] border border-white/30 px-2 py-1 rounded">LIMPIAR</button>
+                <div class="flex-1 truncate"><h2 id="chat-title" class="font-bold text-md"></h2></div>
+                <button onclick="clearRoomHistory()" class="text-[9px] border border-white/40 px-2 py-1 rounded">VACIAR</button>
             </div>
             <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3 flex flex-col"></div>
             <footer class="p-2 bg-[#f0f0f0] flex items-center gap-2 border-t">
-                <input type="text" id="msgInput" placeholder="Escribir..." class="flex-1 p-3 rounded-full outline-none">
-                <button onclick="sendMsg()" class="bg-[#128c7e] text-white w-12 h-12 rounded-full flex items-center justify-center">➤</button>
+                <input type="text" id="msgInput" placeholder="Escribir..." class="flex-1 p-3 rounded-full outline-none text-lg">
+                <button onclick="sendMsg()" class="bg-[#128c7e] text-white w-12 h-12 rounded-full flex items-center justify-center shadow-xl">➤</button>
             </footer>
         </div>
     </div>
 
     <script>
-        let currentRoom = "";
-        let searchActive = false;
-        
-        // Salas Base
+        let currentRoomId = "";
         const salasBase = [
             {t: "Círculo General", i: "🤝", c: "emerald"}, {t: "Recetas y Cocina", i: "🍳", c: "orange"},
             {t: "Automóviles Clásicos", i: "🚗", c: "blue"}, {t: "Viajes y Paseos", i: "🚌", c: "purple"},
@@ -129,62 +113,49 @@
             }
         };
 
-        // --- GESTIÓN DE SALAS ---
+        // --- GESTIÓN DE SALAS Y BUSCADOR ---
         function renderSalas() {
-            const extraSalas = JSON.parse(localStorage.getItem('conectados_extra_rooms')) || [];
-            const todasLasSalas = [...salasBase, ...extraSalas];
-            const container = document.getElementById('salas-container');
-            
-            container.innerHTML = todasLasSalas.map(s => `
-                <div onclick="openChat('${s.t}', '${s.i}')" class="sala-item flex items-center p-4 gap-4 border-b bg-white active:bg-gray-100 transition-colors">
-                    <div class="w-14 h-14 bg-${s.c || 'emerald'}-500 rounded-full flex items-center justify-center text-2xl text-white shadow-sm">${s.i}</div>
-                    <div class="flex-1"><h3 class="font-bold text-gray-800">${s.t}</h3><p class="text-[11px] text-gray-400 uppercase tracking-tighter">Entrar a conversar</p></div>
+            const extraSalas = JSON.parse(localStorage.getItem('conectados_extras')) || [];
+            const todas = [...salasBase, ...extraSalas];
+            document.getElementById('salas-container').innerHTML = todas.map(s => `
+                <div onclick="openChat('${s.t}', '${s.i}')" class="sala-card flex items-center p-5 gap-5 border-b bg-white cursor-pointer">
+                    <div class="w-14 h-14 bg-${s.c || 'emerald'}-500 rounded-2xl flex items-center justify-center text-3xl text-white shadow-md">${s.i}</div>
+                    <div class="flex-1"><h3 class="font-bold text-gray-800 text-lg">${s.t}</h3><p class="text-[10px] text-emerald-600 font-bold uppercase">Chat Activo</p></div>
                 </div>
             `).join('');
         }
 
-        function filterSalas() {
-            const query = document.getElementById('search-input').value.toLowerCase();
-            const items = document.querySelectorAll('.sala-item');
-            items.forEach(item => {
-                const text = item.innerText.toLowerCase();
-                item.style.display = text.includes(query) ? "flex" : "none";
-            });
+        function toggleSearch() {
+            const box = document.getElementById('search-box');
+            box.classList.toggle('hidden');
+            if(!box.classList.contains('hidden')) document.getElementById('searchInput').focus();
         }
 
-        function toggleSearch() {
-            searchActive = !searchActive;
-            document.getElementById('search-container').classList.toggle('hidden', !searchActive);
-            if(!searchActive) {
-                document.getElementById('search-input').value = "";
-                filterSalas();
-            } else {
-                document.getElementById('search-input').focus();
-            }
+        function filterSalas() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            const cards = document.querySelectorAll('.sala-card');
+            cards.forEach(c => c.style.display = c.innerText.toLowerCase().includes(q) ? "flex" : "none");
         }
 
         // --- CREAR SALA ---
-        function showCreateRoom() { document.getElementById('modal-create').classList.remove('hidden'); }
-        function closeCreateRoom() { document.getElementById('modal-create').classList.add('hidden'); }
+        function openCreateModal() { document.getElementById('create-modal').classList.remove('hidden'); }
+        function closeCreateModal() { document.getElementById('create-modal').classList.add('hidden'); }
 
-        function createRoom() {
+        function createNewRoom() {
             const name = document.getElementById('newRoomName').value;
             const emoji = document.getElementById('newRoomEmoji').value || "💬";
-            if(!name) return alert("Ponle un nombre a la sala");
-
-            const extraSalas = JSON.parse(localStorage.getItem('conectados_extra_rooms')) || [];
-            extraSalas.push({ t: name, i: emoji, c: 'emerald' });
-            localStorage.setItem('conectados_extra_rooms', JSON.stringify(extraSalas));
-            
+            if(!name) return;
+            const extras = JSON.parse(localStorage.getItem('conectados_extras')) || [];
+            extras.push({ t: name, i: emoji, c: 'emerald' });
+            localStorage.setItem('conectados_extras', JSON.stringify(extras));
             document.getElementById('newRoomName').value = "";
-            document.getElementById('newRoomEmoji').value = "";
-            closeCreateRoom();
+            closeCreateModal();
             renderSalas();
         }
 
-        // --- CHAT Y MEMORIA ---
+        // --- CHAT ---
         function openChat(t, i) {
-            currentRoom = "chat_" + t.replace(/\s/g, '');
+            currentRoomId = "mem_chat_" + t.replace(/\s/g, '');
             document.getElementById('view-chat').classList.remove('hidden');
             document.getElementById('chat-title').innerText = t;
             document.getElementById('chat-icon').innerText = i;
@@ -192,62 +163,40 @@
         }
 
         function loadMessages() {
-            const chatBox = document.getElementById('chat-messages');
-            chatBox.innerHTML = '';
-            const history = JSON.parse(localStorage.getItem(currentRoom)) || [];
-            history.forEach(msg => displayMsg(msg.content, msg.time));
-            chatBox.scrollTop = chatBox.scrollHeight;
+            const box = document.getElementById('chat-messages');
+            box.innerHTML = '';
+            const history = JSON.parse(localStorage.getItem(currentRoomId)) || [];
+            history.forEach(m => {
+                box.innerHTML += `<div class="p-3 mb-1 bubble-out"><p class="text-md text-gray-800">${m.c}</p><p class="text-[9px] text-right text-emerald-700 font-bold mt-1">${m.t} ✓✓</p></div>`;
+            });
+            box.scrollTop = box.scrollHeight;
         }
 
         function sendMsg() {
             const val = document.getElementById('msgInput').value;
             if(!val) return;
             const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            const history = JSON.parse(localStorage.getItem(currentRoom)) || [];
-            history.push({ content: val, time: time });
+            let history = JSON.parse(localStorage.getItem(currentRoomId)) || [];
+            history.push({ c: val, t: time });
             if(history.length > 50) history.shift();
-            localStorage.setItem(currentRoom, JSON.stringify(history));
-            displayMsg(val, time);
+            localStorage.setItem(currentRoomId, JSON.stringify(history));
             document.getElementById('msgInput').value = '';
+            loadMessages();
         }
 
-        function displayMsg(content, time) {
-            const chat = document.getElementById('chat-messages');
-            chat.innerHTML += `
-                <div class="p-3 shadow-sm max-w-[85%] mb-1 bubble-out">
-                    <p class="text-[15px] leading-tight text-gray-800">${content}</p>
-                    <div class="flex justify-end items-center gap-1 mt-1">
-                        <span class="text-[9px] opacity-40 font-bold">${time}</span>
-                        <span class="text-blue-500 text-[11px] font-bold">✓✓</span>
-                    </div>
-                </div>`;
-            chat.scrollTop = chat.scrollHeight;
-        }
-
-        // --- UTILIDADES ---
-        function switchTab(tab) {
-            const isSalas = tab === 'salas';
-            document.getElementById('view-list').classList.toggle('hidden', !isSalas);
-            document.getElementById('view-estados').classList.toggle('hidden', isSalas);
-            document.getElementById('btn-tab-salas').classList.toggle('tab-active', isSalas);
-            document.getElementById('btn-tab-estados').classList.toggle('tab-active', !isSalas);
-        }
-
+        // --- AUTH ---
         function prepareSurvey() {
             document.getElementById('step-phone').classList.add('step-hidden');
             document.getElementById('step-survey').classList.remove('step-hidden');
-            document.getElementById('random-questions').innerHTML = `<input type="text" class="w-full border-b py-2 outline-none" placeholder="¿Qué era el Winco?">`;
+            document.getElementById('random-questions').innerHTML = `<input type="text" class="w-full border-b py-2 outline-none" placeholder="¿Cómo se llamaba el jabón de pan?">`;
         }
-
         function finishAuth() {
             localStorage.setItem('conectados_user', document.getElementById('userName').value);
             location.reload();
         }
-
         function closeChat() { document.getElementById('view-chat').classList.add('hidden'); }
-        function logout() { localStorage.clear(); location.reload(); }
-        function clearRoomHistory() { if(confirm("¿Borrar chat?")) { localStorage.removeItem(currentRoom); loadMessages(); } }
+        function logout() { if(confirm("¿Salir?")) { localStorage.clear(); location.reload(); } }
+        function clearRoomHistory() { if(confirm("¿Vaciar chat?")) { localStorage.removeItem(currentRoomId); loadMessages(); } }
     </script>
 </body>
-    </html>
-    
+</html>
