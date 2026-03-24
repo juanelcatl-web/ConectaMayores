@@ -1,10 +1,10 @@
  (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
 diff --git a/index.html b/index.html
 new file mode 100644
-index 0000000000000000000000000000000000000000..5da7d39c7dda5072ba4cc709d674bc1cc6ab8eb6
+index 0000000000000000000000000000000000000000..b6984fbb873b6dc398b319bd1b738229963ca638
 --- /dev/null
 +++ b/index.html
-@@ -0,0 +1,282 @@
+@@ -0,0 +1,390 @@
 +<!DOCTYPE html>
 +<html lang="es">
 +<head>
@@ -42,7 +42,7 @@ index 0000000000000000000000000000000000000000..5da7d39c7dda5072ba4cc709d674bc1c
 +            <div class="bg-white p-8 rounded-3xl shadow-2xl border border-gray-100 text-left">
 +                <div id="step-phone">
 +                    <p class="text-gray-500 mb-4 text-sm font-bold">Bienvenido. Introduce tu WhatsApp:</p>
-+                    <input type="number" id="userPhone" placeholder="Ej: 1122334455" class="w-full border-b-2 border-[#075e54] outline-none py-3 text-lg mb-6">
++                    <input type="tel" id="userPhone" inputmode="numeric" maxlength="15" placeholder="Ej: 1122334455" class="w-full border-b-2 border-[#075e54] outline-none py-3 text-lg mb-6">
 +                    <button onclick="prepareSurvey()" class="w-full bg-[#25d366] text-white py-4 rounded-2xl font-bold uppercase shadow-lg active:scale-95 transition-all">Siguiente</button>
 +                </div>
 +                <div id="step-survey" class="step-hidden space-y-4 fade-in">
@@ -120,21 +120,54 @@ index 0000000000000000000000000000000000000000..5da7d39c7dda5072ba4cc709d674bc1c
 +            </div>
 +            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3 flex flex-col"></div>
 +            <footer class="p-2 bg-[#f0f0f0] flex items-center gap-2 border-t">
-+                <input type="text" id="msgInput" placeholder="Escribir mensaje..." class="flex-1 p-3 rounded-full outline-none text-md">
++                <input type="text" id="msgInput" placeholder="Escribir mensaje..." class="flex-1 p-3 rounded-full outline-none text-md" maxlength="500">
 +                <button onclick="sendMsg()" class="bg-[#128c7e] text-white w-12 h-12 rounded-full flex items-center justify-center shadow-xl active:scale-90">➤</button>
 +            </footer>
 +        </div>
 +    </div>
 +
 +    <script>
-+        let currentRoomId = "";
++        const STORAGE_KEYS = {
++            user: 'conectados_user',
++            extras: 'conectados_extras',
++            chatPrefix: 'mem_chat_'
++        };
++
 +        const salasBase = [
-+            {t: "Círculo General", i: "🤝", c: "emerald"}, {t: "Recetas y Cocina", i: "🍳", c: "orange"},
-+            {t: "Automóviles Clásicos", i: "🚗", c: "blue"}, {t: "Huerta y Jardín", i: "🌿", c: "green"},
-+            {t: "Tango y Folklore", i: "💃", c: "red"}, {t: "Recuerdos de Barrio", i: "🏘️", c: "amber"}
++            { id: 'circulo-general', t: 'Círculo General', i: '🤝', c: 'emerald' },
++            { id: 'recetas-cocina', t: 'Recetas y Cocina', i: '🍳', c: 'orange' },
++            { id: 'automoviles-clasicos', t: 'Automóviles Clásicos', i: '🚗', c: 'blue' },
++            { id: 'huerta-jardin', t: 'Huerta y Jardín', i: '🌿', c: 'green' },
++            { id: 'tango-folklore', t: 'Tango y Folklore', i: '💃', c: 'red' },
++            { id: 'recuerdos-barrio', t: 'Recuerdos de Barrio', i: '🏘️', c: 'amber' }
 +        ];
 +
++        let currentRoomId = '';
 +        let deferredPrompt = null;
++
++        function safeParse(value, fallback) {
++            try { return JSON.parse(value); } catch { return fallback; }
++        }
++
++        function getJSON(key, fallback = []) {
++            const raw = localStorage.getItem(key);
++            return raw ? safeParse(raw, fallback) : fallback;
++        }
++
++        function slugify(value) {
++            return value
++                .normalize('NFD')
++                .replace(/[̀-ͯ]/g, '')
++                .toLowerCase()
++                .trim()
++                .replace(/[^a-z0-9]+/g, '-')
++                .replace(/(^-|-$)/g, '');
++        }
++
++        function isValidPhone(phone) {
++            const cleaned = phone.replace(/\D/g, '');
++            return cleaned.length >= 8 && cleaned.length <= 15;
++        }
 +
 +        window.addEventListener('beforeinstallprompt', (e) => {
 +            e.preventDefault();
@@ -160,22 +193,50 @@ index 0000000000000000000000000000000000000000..5da7d39c7dda5072ba4cc709d674bc1c
 +                if (hint) hint.classList.remove('hidden');
 +            }
 +
-+            if(localStorage.getItem('conectados_user')) {
++            if (localStorage.getItem(STORAGE_KEYS.user)) {
 +                document.getElementById('login-screen').classList.add('hidden');
 +                document.getElementById('app-content').classList.remove('hidden');
 +                renderSalas();
 +            }
++
++            document.getElementById('msgInput').addEventListener('keydown', (event) => {
++                if (event.key === 'Enter') sendMsg();
++            });
 +        };
 +
 +        function renderSalas() {
-+            const extraSalas = JSON.parse(localStorage.getItem('conectados_extras')) || [];
++            const extraSalas = getJSON(STORAGE_KEYS.extras);
 +            const todas = [...salasBase, ...extraSalas];
-+            document.getElementById('salas-container').innerHTML = todas.map(s => `
-+                <div onclick="openChat('${s.t}', '${s.i}')" class="sala-card flex items-center p-5 gap-5 border-b bg-white cursor-pointer">
-+                    <div class="w-14 h-14 bg-${s.c || 'emerald'}-500 rounded-2xl flex items-center justify-center text-3xl text-white shadow-md">${s.i}</div>
-+                    <div class="flex-1"><h3 class="font-bold text-gray-800 text-lg">${s.t}</h3><p class="text-[10px] text-emerald-600 font-bold uppercase">Chat Disponible</p></div>
-+                </div>
-+            `).join('');
++            const container = document.getElementById('salas-container');
++            container.innerHTML = '';
++
++            todas.forEach((s) => {
++                const card = document.createElement('div');
++                card.className = 'sala-card flex items-center p-5 gap-5 border-b bg-white cursor-pointer';
++                card.dataset.title = (s.t || '').toLowerCase();
++                card.onclick = () => openChat(s.id || slugify(s.t), s.t, s.i);
++
++                const iconWrap = document.createElement('div');
++                iconWrap.className = `w-14 h-14 bg-${s.c || 'emerald'}-500 rounded-2xl flex items-center justify-center text-3xl text-white shadow-md`;
++                iconWrap.textContent = s.i || '💬';
++
++                const info = document.createElement('div');
++                info.className = 'flex-1';
++
++                const title = document.createElement('h3');
++                title.className = 'font-bold text-gray-800 text-lg';
++                title.textContent = s.t || 'Sala';
++
++                const subtitle = document.createElement('p');
++                subtitle.className = 'text-[10px] text-emerald-600 font-bold uppercase';
++                subtitle.textContent = 'Chat Disponible';
++
++                info.appendChild(title);
++                info.appendChild(subtitle);
++                card.appendChild(iconWrap);
++                card.appendChild(info);
++                container.appendChild(card);
++            });
 +        }
 +
 +        function switchTab(tab) {
@@ -191,67 +252,103 @@ index 0000000000000000000000000000000000000000..5da7d39c7dda5072ba4cc709d674bc1c
 +        function toggleSearch() {
 +            const box = document.getElementById('search-box');
 +            box.classList.toggle('hidden');
-+            if(!box.classList.contains('hidden')) document.getElementById('searchInput').focus();
++            if (!box.classList.contains('hidden')) document.getElementById('searchInput').focus();
 +        }
 +
 +        function filterSalas() {
-+            const q = document.getElementById('searchInput').value.toLowerCase();
-+            const cards = document.querySelectorAll('.sala-card');
-+            cards.forEach(c => c.style.display = c.innerText.toLowerCase().includes(q) ? "flex" : "none");
++            const q = document.getElementById('searchInput').value.toLowerCase().trim();
++            document.querySelectorAll('.sala-card').forEach((card) => {
++                card.style.display = card.dataset.title.includes(q) ? 'flex' : 'none';
++            });
 +        }
 +
 +        function openCreateModal() { document.getElementById('create-modal').classList.remove('hidden'); }
 +        function closeCreateModal() { document.getElementById('create-modal').classList.add('hidden'); }
 +
 +        function createNewRoom() {
-+            const name = document.getElementById('newRoomName').value;
-+            const emoji = document.getElementById('newRoomEmoji').value || "💬";
-+            if(!name) return alert("Ponle un nombre!");
-+            const extras = JSON.parse(localStorage.getItem('conectados_extras')) || [];
-+            extras.push({ t: name, i: emoji, c: 'emerald' });
-+            localStorage.setItem('conectados_extras', JSON.stringify(extras));
-+            document.getElementById('newRoomName').value = "";
++            const name = document.getElementById('newRoomName').value.trim();
++            const emoji = (document.getElementById('newRoomEmoji').value || '💬').trim();
++            if (name.length < 3) return alert('Poné un nombre de al menos 3 letras.');
++
++            const id = slugify(name);
++            const extras = getJSON(STORAGE_KEYS.extras);
++            const exists = [...salasBase, ...extras].some((room) => room.id === id);
++            if (exists) return alert('Ya existe una sala con ese nombre.');
++
++            extras.push({ id, t: name, i: emoji, c: 'emerald' });
++            localStorage.setItem(STORAGE_KEYS.extras, JSON.stringify(extras));
++            document.getElementById('newRoomName').value = '';
++            document.getElementById('newRoomEmoji').value = '';
 +            closeCreateModal();
 +            renderSalas();
 +        }
 +
-+        function openChat(t, i) {
-+            currentRoomId = "mem_chat_" + t.replace(/\s/g, '');
++        function openChat(id, title, icon) {
++            currentRoomId = STORAGE_KEYS.chatPrefix + id;
 +            document.getElementById('view-chat').classList.remove('hidden');
-+            document.getElementById('chat-title').innerText = t;
-+            document.getElementById('chat-icon').innerText = i;
++            document.getElementById('chat-title').innerText = title;
++            document.getElementById('chat-icon').innerText = icon;
 +            loadMessages();
 +        }
 +
 +        function loadMessages() {
 +            const box = document.getElementById('chat-messages');
 +            box.innerHTML = '';
-+            const history = JSON.parse(localStorage.getItem(currentRoomId)) || [];
-+            history.forEach(m => {
-+                box.innerHTML += `<div class="p-3 mb-1 bubble-out"><p class="text-md text-gray-800">${m.c}</p><p class="text-[9px] text-right text-emerald-700 font-bold mt-1">${m.t} ✓✓</p></div>`;
++            const history = getJSON(currentRoomId);
++
++            history.forEach((m) => {
++                const bubble = document.createElement('div');
++                bubble.className = 'p-3 mb-1 bubble-out';
++
++                const content = document.createElement('p');
++                content.className = 'text-md text-gray-800';
++                content.textContent = m.c || '';
++
++                const meta = document.createElement('p');
++                meta.className = 'text-[9px] text-right text-emerald-700 font-bold mt-1';
++                meta.textContent = `${m.t || ''} ✓✓`;
++
++                bubble.appendChild(content);
++                bubble.appendChild(meta);
++                box.appendChild(bubble);
 +            });
++
 +            box.scrollTop = box.scrollHeight;
 +        }
 +
 +        function sendMsg() {
-+            const val = document.getElementById('msgInput').value;
-+            if(!val) return;
-+            const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-+            let history = JSON.parse(localStorage.getItem(currentRoomId)) || [];
-+            history.push({ c: val, t: time });
++            const input = document.getElementById('msgInput');
++            const value = input.value.trim();
++            if (!value) return;
++
++            const time = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
++            const history = getJSON(currentRoomId);
++            history.push({ c: value.slice(0, 500), t: time });
 +            localStorage.setItem(currentRoomId, JSON.stringify(history));
-+            document.getElementById('msgInput').value = '';
++            input.value = '';
 +            loadMessages();
 +        }
 +
 +        function prepareSurvey() {
++            const phone = document.getElementById('userPhone').value.trim();
++            if (!isValidPhone(phone)) {
++                alert('Ingresá un WhatsApp válido (8 a 15 dígitos).');
++                return;
++            }
++
 +            document.getElementById('step-phone').classList.add('step-hidden');
 +            document.getElementById('step-survey').classList.remove('step-hidden');
-+            document.getElementById('random-questions').innerHTML = `<input type="text" class="w-full border-b py-2 outline-none" placeholder="¿Cómo se llamaba el jabón de pan?">`;
++            document.getElementById('random-questions').innerHTML = '<input type="text" class="w-full border-b py-2 outline-none" placeholder="¿Cómo se llamaba el jabón de pan?">';
 +        }
 +
 +        function finishAuth() {
-+            localStorage.setItem('conectados_user', document.getElementById('userName').value);
++            const phone = document.getElementById('userPhone').value.trim();
++            const name = document.getElementById('userName').value.trim();
++
++            if (!isValidPhone(phone)) return alert('Revisá el teléfono.');
++            if (name.length < 2) return alert('Contanos tu nombre para continuar.');
++
++            localStorage.setItem(STORAGE_KEYS.user, JSON.stringify({ name, phone }));
 +            location.reload();
 +        }
 +
@@ -272,11 +369,22 @@ index 0000000000000000000000000000000000000000..5da7d39c7dda5072ba4cc709d674bc1c
 +        }
 +
 +        function closeChat() { document.getElementById('view-chat').classList.add('hidden'); }
-+        function logout() { if(confirm("¿Cerrar sesión?")) { localStorage.clear(); location.reload(); } }
-+        function clearRoomHistory() { if(confirm("¿Vaciar chat?")) { localStorage.removeItem(currentRoomId); loadMessages(); } }
++
++        function logout() {
++            if (!confirm('¿Cerrar sesión?')) return;
++            localStorage.removeItem(STORAGE_KEYS.user);
++            location.reload();
++        }
++
++        function clearRoomHistory() {
++            if (confirm('¿Vaciar chat?')) {
++                localStorage.removeItem(currentRoomId);
++                loadMessages();
++            }
++        }
 +    </script>
 +
-+    <script>
++<script>
 +        if ('serviceWorker' in navigator) {
 +            window.addEventListener('load', () => {
 +                navigator.serviceWorker.register('./service-worker.js').catch((err) => {
