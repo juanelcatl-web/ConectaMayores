@@ -7,6 +7,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#075e54">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="icons/icon-192.svg">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #e5ddd5; }
@@ -217,6 +218,16 @@
         function closeChat() { document.getElementById('view-chat').classList.add('hidden'); }
         function logout() { if(confirm("¿Cerrar sesión?")) { localStorage.clear(); location.reload(); } }
         function clearRoomHistory() { if(confirm("¿Vaciar chat?")) { localStorage.removeItem(currentRoomId); loadMessages(); } }
+    </script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js').catch((err) => {
+                    console.error('No se pudo registrar el Service Worker:', err);
+                });
+            });
+        }
     </script>
 </body>
 </html>
